@@ -1,6 +1,9 @@
 from fastapi import FastAPI
+from schemas.schemas import Task
 
 app = FastAPI()
+
+tasks: list[Task] = []
 
 @app.get("/")
 def information():
@@ -12,11 +15,14 @@ def health():
 
 @app.get("/tasks")
 def tasks():
-    pass
+    return tasks
 
 @app.get("/tasks/{id}")
 def get_task(id):
-    pass
+    for task in tasks:
+        if task.id == id:
+            return task
+
 
 @app.post("/tasks")
 def add_task():
