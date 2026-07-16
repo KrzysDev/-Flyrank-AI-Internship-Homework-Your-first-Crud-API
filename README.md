@@ -30,7 +30,7 @@ This API allows clients to manage a list of tasks. All task data is kept in-memo
 
 1. Clone the repository (if not already done):
    ```bash
-   git clone <your-repository-url>
+   git clone <repo-url>
    cd "Your first Crud API"
    ```
 
@@ -125,5 +125,3 @@ Here you can view all endpoints and use the **"Try it out"** button to perform t
 
 ### Swagger UI Preview
 ![Swagger UI Documentation](swagger_screenshot.png)
-
-*(Note: Replace `swagger_screenshot.png` with a screenshot of your Swagger UI interface before submitting.)*
