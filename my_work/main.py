@@ -30,19 +30,20 @@ def get_task(id):
 
 
 @app.post("/tasks")
-def add_task(title: str):
-    task = Task()
+def add_task(new_title: str):
 
-    task.title = title
-
-    last_id = tasks[len(tasks) - 1].id
+    last_id = all_tasks[len(all_tasks) - 1].id if len(all_tasks) > 0 else 0
     
-    task.id = last_id + 1
-
-    task.done = False
+    new_id = last_id + 1
+    
+    task = Task(
+        id = new_id,
+        title = new_title,
+        done = False
+    )
 
     all_tasks.append(task)
-    
+
     return {"task appended status": "success"}
 
 
