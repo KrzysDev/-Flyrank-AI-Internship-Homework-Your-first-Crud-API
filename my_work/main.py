@@ -1,15 +1,29 @@
-from fastapi import FastAPI, HTTPException
-from schemas.schemas import Task
+import os
+import sys
+# Add current directory to path to allow importing schemas module regardless of run location
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from fastapi import FastAPI, HTTPException, Response, status
+from schemas.schemas import Task, TaskCreate, TaskUpdate
 
 
-all_tasks = []
+# Pre-filled list of tasks (3 example tasks) as per Stage 2 requirements
+all_tasks = [
+    Task(id=1, title="Buy milk", done=False),
+    Task(id=2, title="Clean the room", done=True),
+    Task(id=3, title="Read a book", done=False),
+]
 
 app = FastAPI()
 
 
 @app.get("/")
 def information():
-    return {"something": "here"}
+    return {
+        "name": "Task API",
+        "version": "1.0",
+        "endpoints": ["/tasks"]
+    }
 
 
 @app.get("/health")
@@ -28,57 +42,61 @@ def get_task(id: int):
         if task.id == id:
             return task
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Task {id} not found"
     )
 
 
-@app.post("/tasks")
-def add_task(new_title: str):
-
-    if new_title == "":
+@app.post("/tasks", status_code=status.HTTP_201_CREATED)
+def add_task(payload: TaskCreate):
+    if not payload.title or payload.title.strip() == "":
         raise HTTPException(
-        status_code=404,
-        detail=f"Name cannot be empty!"
-    )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Title is required and cannot be empty"
+        )
 
-    last_id = all_tasks[len(all_tasks) - 1].id if len(all_tasks) > 0 else 0
-    
+    last_id = all_tasks[-1].id if len(all_tasks) > 0 else 0
     new_id = last_id + 1
     
-    task = Task(
-        id = new_id,
-        title = new_title,
-        done = False
+    new_task = Task(
+        id=new_id,
+        title=payload.title,
+        done=False
     )
-
-    all_tasks.append(task)
-
-    return {"task appended status": "success"}
+    all_tasks.append(new_task)
+    return new_task
 
 
 @app.put("/tasks/{id}")
-def edit_task(id: int, task: Task):
-    for i in range(len(all_tasks)):
-        print(id, all_tasks[i].id)
-        if int(id) == int(all_tasks[i].id):
-            all_tasks[i] = task
-            return {"edited task status": "success"}
+def edit_task(id: int, payload: TaskUpdate):
+    for task in all_tasks:
+        if task.id == id:
+            if payload.title is not None and payload.title.strip() == "":
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Title cannot be empty"
+                )
+            
+            if payload.title is not None:
+                task.title = payload.title
+            if payload.done is not None:
+                task.done = payload.done
+            return task
+            
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Task {id} not found"
     )
 
 
-
-@app.delete("/tasks/{id}")
+@app.delete("/tasks/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(id: int):
     for i in range(len(all_tasks)):
-        print(id, all_tasks[i].id)
-        if int(id) == int(all_tasks[i].id):
-            all_tasks.remove(all_tasks[i])
-            return {"delete task status": "success"}
+        if all_tasks[i].id == id:
+            all_tasks.pop(i)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+            
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Task {id} not found"
     )
