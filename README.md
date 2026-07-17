@@ -73,6 +73,7 @@ The server will start running at **`http://127.0.0.1:8000`** (or `http://localho
 | **POST** | `/tasks` | Create a new task | `{"title": "Buy milk"}` | `201 Created` | `400 Bad Request` |
 | **PUT** | `/tasks/{id}` | Replace/update a task | `{"title": "Buy milk", "done": true}` | `200 OK` | `400 Bad Request`, `404 Not Found` |
 | **DELETE** | `/tasks/{id}` | Delete a task | *None* | `204 No Content` | `404 Not Found` |
+| **POST** | `/reset` | Reset tasks to default | *None* | `200 OK` | - |
 
 ---
 
@@ -125,3 +126,9 @@ Here you can view all endpoints and use the **"Try it out"** button to perform t
 
 ### Swagger UI Preview
 ![Swagger UI Documentation](swagger_screenshot.png)
+
+---
+
+## The Mortality Experiment (RAM Memory Volatility)
+
+When we create new tasks through the API and then restart the server, performing a `GET /tasks` request reveals that all custom tasks have disappeared, resetting the list to its initial state. This occurs because the application's state is stored in the server's RAM (volatile memory), which is completely wiped when the process terminates. This behavior highlights the need for persistent storage (such as a database or filesystem), which is the entire reason Week 3 exists.

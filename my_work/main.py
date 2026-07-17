@@ -124,3 +124,10 @@ def delete_task(id: int):
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Task {id} not found"
     )
+
+
+@app.post("/reset")
+def reset_tasks():
+    all_tasks.clear()
+    all_tasks.extend([Task(id=1, title="Buy milk", done=False), Task(id=2, title="Clean the room", done=True), Task(id=3, title="Read a book", done=False)])
+    return {"message": "Tasks reset to default state"}
