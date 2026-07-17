@@ -1,13 +1,11 @@
 import os
 import sys
-# Add current directory to path to allow importing schemas module regardless of run location
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, HTTPException, Response, status
 from schemas.schemas import Task, TaskCreate, TaskUpdate
 
-
-# Pre-filled list of tasks (3 example tasks) as per Stage 2 requirements
 all_tasks = [
     Task(id=1, title="Buy milk", done=False),
     Task(id=2, title="Clean the room", done=True),
@@ -32,8 +30,26 @@ def health():
 
 
 @app.get("/tasks")
-def tasks():
-    return all_tasks
+def tasks(search: str | None = None, done: bool | None = None):
+    
+    def meets_criteria(task: Task):
+        if search is not None and search not in task.title:
+            return False
+
+        if done is not None and task.done != done:
+            return False
+
+        return True
+    
+    if len(all_tasks) > 0:
+        res = filter(meets_criteria, all_tasks)
+        return list(res)
+    else:
+        return all_tasks
+        
+    
+
+    
 
 
 @app.get("/tasks/{id}")
