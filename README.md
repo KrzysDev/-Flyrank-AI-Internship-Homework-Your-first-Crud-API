@@ -132,3 +132,37 @@ Here you can view all endpoints and use the **"Try it out"** button to perform t
 ## The Mortality Experiment (RAM Memory Volatility)
 
 When we create new tasks through the API and then restart the server, performing a `GET /tasks` request reveals that all custom tasks have disappeared, resetting the list to its initial state. This occurs because the application's state is stored in the server's RAM (volatile memory), which is completely wiped when the process terminates. This behavior highlights the need for persistent storage (such as a database or filesystem), which is the entire reason Week 3 exists.
+
+## AI vs Me
+
+**Prompt used:** Asked Claude (Opus 4.6) to build the same CRUD todo API in Python/FastAPI, 
+in-memory storage only, with filtering, search, a stats endpoint, and seed/reset restoring 
+3 example tasks — generated in an isolated `ai_version/` folder without access to my own code.
+
+**What the AI did better:**
+- Split the code into three files (`main.py`, `models.py`, `store.py`), cleanly separating 
+  routing, schemas, and data storage — a more maintainable structure than my single-file approach.
+- Used Pydantic `Field(...)` constraints for declarative validation instead of manual `if` checks.
+- Extended search to also match task descriptions, and made it case-insensitive.
+
+**What it got wrong or quietly changed:**
+- I never specified the exact shape of a `Task`. The AI replaced my simple `done: bool` with a 
+  `status` enum (`open`/`done`) and added a `description` field I never asked for — meaning its 
+  API isn't a drop-in replacement for mine (`{"title": "x", "done": false}` wouldn't work against it).
+- Pydantic validation errors return **422**, not the **400** the assignment requires for a 
+  missing/empty title — I didn't specify a status code, so the AI defaulted to FastAPI's built-in behavior.
+- The DELETE endpoint returns the deleted task in the body alongside (implicitly) a non-204 
+  response model, instead of an empty body — inconsistent with the "204 = no content" rule.
+- It used `/tasks/reset` and `/tasks/seed` instead of the plain `/reset` I had in mind, and used 
+  the now-deprecated `@app.on_event("startup")` instead of the newer `lifespan` pattern.
+
+**What my prompt forgot to specify:**
+- The exact field names/types for a task (`id`, `title`, `done`) — I only said "create, read, 
+  update, delete tasks," leaving the AI free to redesign the data model.
+- The exact status codes expected for validation errors (400) and delete responses (204, empty body).
+- The exact route names for reset/seed and query parameter names for filtering.
+
+**Takeaway:** the AI produced a well-structured, arguably more "professional" API, but several 
+details drifted from my actual spec — because my prompt described the *behavior* I wanted, not 
+the exact *contract* (fields, status codes, paths). I could only catch these gaps because I had 
+built the assignment by hand first and knew exactly what "correct" was supposed to look like.
