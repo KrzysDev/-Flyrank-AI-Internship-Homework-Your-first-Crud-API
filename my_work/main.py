@@ -47,8 +47,16 @@ def tasks(search: str | None = None, done: bool | None = None):
     else:
         return all_tasks
         
-    
+@app.get("/stats")
+def stats():
+    open_tasks = tasks(done=False)
+    closed_tasks = tasks(done=True)
 
+    return {
+        "total": len(all_tasks),
+        "done": len(closed_tasks),
+        "open": len(open_tasks)
+    }
     
 
 
